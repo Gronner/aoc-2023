@@ -1,6 +1,8 @@
+use std::str::FromStr;
+
 use aoc_downloader::download_day;
 
-const DAY: u32 = 1;
+const DAY: u32 = 2;
 
 fn get_input() -> Vec<String> {
     use std::io::BufRead;
@@ -11,8 +13,99 @@ fn get_input() -> Vec<String> {
     reader.lines().collect::<Result<_, _>>().unwrap()
 }
 
-fn parse_input(input: Vec<String>) -> Vec<String> {
-    input
+#[derive(Debug, Clone)]
+struct Game {
+    id: u32,
+    rounds: Vec<Round>,
+}
+
+impl FromStr for Game {
+    type Err = ();
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let game_re = regex!(r"Game (\d+)");
+        let id = game_re.captures(s).unwrap();
+        let id = id.get(1).unwrap().as_str().parse().unwrap();
+        let rounds = s.split(": ")
+            .last().unwrap()
+            .split(';')
+            .map(|r| Round::from_str(r).unwrap())
+            .collect();
+        Ok(Game { id, rounds })
+    }
+}
+
+impl Game {
+    fn is_valid(&self, red: u32, green: u32, blue: u32) -> bool {
+        !self.rounds.iter()
+            .any(|r| r.red > red || r.green > green || r.blue > blue)
+    }
+
+    fn get_id(&self) -> u32 {
+        self.id
+    }
+
+    fn get_minimal_round_set(&self) -> Round {
+        let red = self.rounds.iter()
+            .map(|r| r.red)
+            .max()
+            .unwrap();
+
+        let green = self.rounds.iter()
+            .map(|r| r.green)
+            .max()
+            .unwrap();
+
+        let blue  = self.rounds.iter()
+            .map(|r| r.blue)
+            .max()
+            .unwrap();
+
+        Round { red, blue, green }
+
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+struct Round {
+    pub red: u32,
+    pub blue: u32,
+    pub green: u32,
+}
+
+impl FromStr for Round {
+    type Err = ();
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let red_re = regex!(r"(\d+) red");
+        let green_re = regex!(r"(\d+) green");
+        let blue_re = regex!(r"(\d+) blue");
+
+        let red = if let Some(redc) = red_re.captures(s) {
+            redc.get(1).unwrap().as_str().parse().unwrap()
+        } else {
+            0
+        };
+
+        let green  = if let Some(greenc) = green_re.captures(s) {
+            greenc.get(1).unwrap().as_str().parse().unwrap()
+        } else {
+            0
+        };
+
+        let blue  = if let Some(bluec) = blue_re.captures(s) {
+            bluec.get(1).unwrap().as_str().parse().unwrap()
+        } else {
+            0
+        };
+        
+        Ok(Round { red, blue, green })
+    }
+}
+
+fn parse_input(input: Vec<String>) -> Vec<Game> {
+    input.iter()
+        .map(|l| Game::from_str(l).unwrap())
+        .collect()
 }
 
 pub fn run_day() {
@@ -26,37 +119,16 @@ pub fn run_day() {
     );
 }
 
-fn calculate(input: &[String], replace: bool) -> u32 {
-    let output = input.iter()
-        .map(|l| { if replace {
-            l.replace("one", "o1e")
-            .replace("two", "t2o")
-            .replace("three", "t3e")
-            .replace("four", "f4r")
-            .replace("five", "f5e")
-            .replace("six", "s6x")
-            .replace("seven", "s7n")
-            .replace("eight", "e8t")
-            .replace("nine", "n9e")
-            } else {
-                l.to_string()
-            }}
-        )
-        .map(|l| l.chars()
-            .filter_map(|c| c.to_digit(10))
-            .collect::<Vec<u32>>()
-        ).collect::<Vec<_>>();
-    output.iter()
-        .map(|s| s.first().unwrap() * 10 + s.last().unwrap())
-        .sum()
+fn part1(input: &[Game]) -> u32 {
+    input.iter()
+        .filter(|g| g.is_valid(12, 13, 14))
+        .fold(0, |acc, g| acc + g.get_id())
 }
 
-fn part1(input: &[String]) -> u32 {
-    calculate(input, false)
-}
-
-fn part2(input: &[String]) -> u32 {
-    calculate(input, true)
+fn part2(input: &[Game]) -> u32 {
+    input.iter()
+        .map(|g| g.get_minimal_round_set())
+        .fold(0, |acc, r| acc + r.red * r.green * r.blue)
 }
 
 #[cfg(test)]
@@ -64,14 +136,14 @@ mod tests {
     use super::*;
 
     #[test]
-    fn day0_part1_output() {
+    fn part1_output() {
         let input = parse_input(get_input());
-        assert_eq!(54390, part1(&input));
+        assert_eq!(2486, part1(&input));
     }
 
     #[test]
-    fn day0_part2_output() {
+    fn part2_output() {
         let input = parse_input(get_input());
-        assert_eq!(54277, part2(&input));
+        assert_eq!(87984, part2(&input));
     }
 }

@@ -1,3 +1,5 @@
+#[macro_use]
+mod utils;
 mod day1;
 mod day2;
 
