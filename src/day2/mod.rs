@@ -62,7 +62,6 @@ impl Game {
             .unwrap();
 
         Round { red, blue, green }
-
     }
 }
 
@@ -73,6 +72,14 @@ struct Round {
     pub green: u32,
 }
 
+fn extract_count(regex: &regex::Regex, input: &str) -> u32 {
+        if let Some(redc) = regex.captures(input) {
+            redc.get(1).unwrap().as_str().parse().unwrap()
+        } else {
+            0
+        }
+}
+
 impl FromStr for Round {
     type Err = ();
     fn from_str(s: &str) -> Result<Self, Self::Err> {
@@ -80,24 +87,10 @@ impl FromStr for Round {
         let green_re = regex!(r"(\d+) green");
         let blue_re = regex!(r"(\d+) blue");
 
-        let red = if let Some(redc) = red_re.captures(s) {
-            redc.get(1).unwrap().as_str().parse().unwrap()
-        } else {
-            0
-        };
+        let red = extract_count(red_re, s);
+        let green = extract_count(green_re, s);
+        let blue = extract_count(blue_re, s);
 
-        let green  = if let Some(greenc) = green_re.captures(s) {
-            greenc.get(1).unwrap().as_str().parse().unwrap()
-        } else {
-            0
-        };
-
-        let blue  = if let Some(bluec) = blue_re.captures(s) {
-            bluec.get(1).unwrap().as_str().parse().unwrap()
-        } else {
-            0
-        };
-        
         Ok(Round { red, blue, green })
     }
 }
