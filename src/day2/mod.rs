@@ -26,8 +26,10 @@ impl FromStr for Game {
         let game_re = regex!(r"Game (\d+)");
         let id = game_re.captures(s).unwrap();
         let id = id.get(1).unwrap().as_str().parse().unwrap();
-        let rounds = s.split(": ")
-            .last().unwrap()
+        let rounds = s
+            .split(": ")
+            .last()
+            .unwrap()
             .split(';')
             .map(|r| Round::from_str(r).unwrap())
             .collect();
@@ -37,7 +39,9 @@ impl FromStr for Game {
 
 impl Game {
     fn is_valid(&self, red: u32, green: u32, blue: u32) -> bool {
-        !self.rounds.iter()
+        !self
+            .rounds
+            .iter()
             .any(|r| r.red > red || r.green > green || r.blue > blue)
     }
 
@@ -46,20 +50,11 @@ impl Game {
     }
 
     fn get_minimal_round_set(&self) -> Round {
-        let red = self.rounds.iter()
-            .map(|r| r.red)
-            .max()
-            .unwrap();
+        let red = self.rounds.iter().map(|r| r.red).max().unwrap();
 
-        let green = self.rounds.iter()
-            .map(|r| r.green)
-            .max()
-            .unwrap();
+        let green = self.rounds.iter().map(|r| r.green).max().unwrap();
 
-        let blue  = self.rounds.iter()
-            .map(|r| r.blue)
-            .max()
-            .unwrap();
+        let blue = self.rounds.iter().map(|r| r.blue).max().unwrap();
 
         Round { red, blue, green }
     }
@@ -73,11 +68,11 @@ struct Round {
 }
 
 fn extract_count(regex: &regex::Regex, input: &str) -> u32 {
-        if let Some(redc) = regex.captures(input) {
-            redc.get(1).unwrap().as_str().parse().unwrap()
-        } else {
-            0
-        }
+    if let Some(redc) = regex.captures(input) {
+        redc.get(1).unwrap().as_str().parse().unwrap()
+    } else {
+        0
+    }
 }
 
 impl FromStr for Round {
@@ -96,9 +91,7 @@ impl FromStr for Round {
 }
 
 fn parse_input(input: Vec<String>) -> Vec<Game> {
-    input.iter()
-        .map(|l| Game::from_str(l).unwrap())
-        .collect()
+    input.iter().map(|l| Game::from_str(l).unwrap()).collect()
 }
 
 pub fn run_day() {
@@ -113,13 +106,15 @@ pub fn run_day() {
 }
 
 fn part1(input: &[Game]) -> u32 {
-    input.iter()
+    input
+        .iter()
         .filter(|g| g.is_valid(12, 13, 14))
         .fold(0, |acc, g| acc + g.get_id())
 }
 
 fn part2(input: &[Game]) -> u32 {
-    input.iter()
+    input
+        .iter()
         .map(|g| g.get_minimal_round_set())
         .fold(0, |acc, r| acc + r.red * r.green * r.blue)
 }

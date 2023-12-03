@@ -27,26 +27,31 @@ pub fn run_day() {
 }
 
 fn calculate(input: &[String], replace: bool) -> u32 {
-    let output = input.iter()
-        .map(|l| { if replace {
-            l.replace("one", "o1e")
-            .replace("two", "t2o")
-            .replace("three", "t3e")
-            .replace("four", "f4r")
-            .replace("five", "f5e")
-            .replace("six", "s6x")
-            .replace("seven", "s7n")
-            .replace("eight", "e8t")
-            .replace("nine", "n9e")
+    let output = input
+        .iter()
+        .map(|l| {
+            if replace {
+                l.replace("one", "o1e")
+                    .replace("two", "t2o")
+                    .replace("three", "t3e")
+                    .replace("four", "f4r")
+                    .replace("five", "f5e")
+                    .replace("six", "s6x")
+                    .replace("seven", "s7n")
+                    .replace("eight", "e8t")
+                    .replace("nine", "n9e")
             } else {
                 l.to_string()
-            }}
-        )
-        .map(|l| l.chars()
-            .filter_map(|c| c.to_digit(10))
-            .collect::<Vec<u32>>()
-        ).collect::<Vec<_>>();
-    output.iter()
+            }
+        })
+        .map(|l| {
+            l.chars()
+                .filter_map(|c| c.to_digit(10))
+                .collect::<Vec<u32>>()
+        })
+        .collect::<Vec<_>>();
+    output
+        .iter()
         .map(|s| s.first().unwrap() * 10 + s.last().unwrap())
         .sum()
 }
