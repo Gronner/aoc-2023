@@ -49,7 +49,7 @@ fn relate_part_numbers(numbers: &Vec<Number>, parts: &Vec<Part>, dimensions: Pos
     let mut part_mapping =  HashMap::new();
     for part in parts {
         for number in numbers {
-            if part.is_part_number(&number, dimensions) {
+            if part.is_part_number(number, dimensions) {
                 part_mapping
                     .entry(*part)
                     .and_modify(|m: &mut Vec<u32>| m.push(number.num))
