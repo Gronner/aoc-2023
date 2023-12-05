@@ -1,5 +1,6 @@
 use std::{str::FromStr, fmt::Display};
 use itertools::Itertools;
+use rayon::prelude::*;
 
 use aoc_downloader::download_day;
 
@@ -67,9 +68,9 @@ impl Range {
         seed.0 >= self.source && seed.0 < (self.source + self.length)
     }
 
-    fn map_seed(&self, s: &Seed) -> Seed {
+    fn map_seed(&self, s: &mut Seed) {
         let offset = s.0 - self.source;
-        Seed(self.destination + offset)
+        *s = Seed(self.destination + offset);
     }
 
     fn from_string(s: &str, kind: Mapping) -> Self {
@@ -109,34 +110,46 @@ pub fn run_day() {
     );
 }
 
-fn apply_map(seeds: &Vec<Seed>, mappings: &Vec<Range>, kind: Mapping) -> Vec<Seed> {
-    seeds.iter()
-        .map(|s| {
+fn apply_map(seeds: &mut Vec<Seed>, mappings: &Vec<Range>, kind: Mapping) {
+    seeds.par_iter_mut()
+        .for_each(|s| {
             for mapping in mappings.iter() {
                 if mapping.kind == kind && mapping.seed_in_range(s) {
-                    return mapping.map_seed(s)
+                    return mapping.map_seed(s);
                 }
             }
-            *s
-        })
-        .collect()
+        });
 }
 
 fn part1(input: &(Vec<Seed>, Vec<Range>)) -> Seed {
     let (seeds, mappings) = input;
-    let seeds: Vec<Seed> = apply_map(seeds, mappings, Mapping::ToSoil);
-    let seeds: Vec<Seed> = apply_map(&seeds, mappings, Mapping::ToFertilizer);
-    let seeds: Vec<Seed> = apply_map(&seeds, mappings, Mapping::ToWater);
-    let seeds: Vec<Seed> = apply_map(&seeds, mappings, Mapping::ToLight);
-    let seeds: Vec<Seed> = apply_map(&seeds, mappings, Mapping::ToTemperature);
-    let seeds: Vec<Seed> = apply_map(&seeds, mappings, Mapping::ToHumidity);
-    let seeds: Vec<Seed> = apply_map(&seeds, mappings, Mapping::ToLocation);
+    let mut seeds = seeds.clone();
+    apply_map(&mut seeds, mappings, Mapping::ToSoil);
+    apply_map(&mut seeds, mappings, Mapping::ToFertilizer);
+    apply_map(&mut seeds, mappings, Mapping::ToWater);
+    apply_map(&mut seeds, mappings, Mapping::ToLight);
+    apply_map(&mut seeds, mappings, Mapping::ToTemperature);
+    apply_map(&mut seeds, mappings, Mapping::ToHumidity);
+    apply_map(&mut seeds, mappings, Mapping::ToLocation);
 
     *seeds.iter().min().unwrap()
 }
 
-fn part2(input: &(Vec<Seed>, Vec<Range>)) -> u32 {
-    0
+fn part2(input: &(Vec<Seed>, Vec<Range>)) -> Seed {
+    let (seeds, mappings) = input;
+    let mut seeds = seeds.chunks(2)
+        .map(|chunk| ((chunk[0].0)..(chunk[0].0 + chunk[1].0)).map(|i| Seed(i)).collect::<Vec<Seed>>())
+        .flatten()
+        .collect();
+    apply_map(&mut seeds, mappings, Mapping::ToSoil);
+    apply_map(&mut seeds, mappings, Mapping::ToFertilizer);
+    apply_map(&mut seeds, mappings, Mapping::ToWater);
+    apply_map(&mut seeds, mappings, Mapping::ToLight);
+    apply_map(&mut seeds, mappings, Mapping::ToTemperature);
+    apply_map(&mut seeds, mappings, Mapping::ToHumidity);
+    apply_map(&mut seeds, mappings, Mapping::ToLocation);
+
+    *seeds.iter().min().unwrap()
 }
 
 #[cfg(test)]
