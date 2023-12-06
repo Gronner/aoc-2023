@@ -41,7 +41,7 @@ fn run_race(race: &Race) -> u64 {
         let distance = (race.duration - speed) * speed;
         if distance > race.record {
             ways_to_win += 1;
-        } 
+        }
         if let Some(s) = speed.checked_sub(1) {
             speed = s;
         } else {
@@ -52,9 +52,17 @@ fn run_race(race: &Race) -> u64 {
 }
 
 fn part1(input: &[String]) -> u64 {
-    let times = input[0].split(' ').filter_map(|split| split.parse().ok()).collect::<Vec<u64>>();
-    let distances  = input[1].split(' ').filter_map(|split| split.parse().ok()).collect::<Vec<u64>>();
-    let races = zip(times, distances).map(|(duration, record)| Race { duration, record}).collect::<Vec<Race>>();
+    let times = input[0]
+        .split(' ')
+        .filter_map(|split| split.parse().ok())
+        .collect::<Vec<u64>>();
+    let distances = input[1]
+        .split(' ')
+        .filter_map(|split| split.parse().ok())
+        .collect::<Vec<u64>>();
+    let races = zip(times, distances)
+        .map(|(duration, record)| Race { duration, record })
+        .collect::<Vec<Race>>();
 
     let mut result = 1;
     for race in races {
@@ -65,8 +73,22 @@ fn part1(input: &[String]) -> u64 {
 
 fn part2(input: &[String]) -> u64 {
     let race = Race {
-        duration: input[0].split_whitespace().collect::<String>().split(':').last().unwrap().parse().unwrap(),
-        record: input[1].split_whitespace().collect::<String>().split(':').last().unwrap().parse().unwrap(),
+        duration: input[0]
+            .split_whitespace()
+            .collect::<String>()
+            .split(':')
+            .last()
+            .unwrap()
+            .parse()
+            .unwrap(),
+        record: input[1]
+            .split_whitespace()
+            .collect::<String>()
+            .split(':')
+            .last()
+            .unwrap()
+            .parse()
+            .unwrap(),
     };
     run_race(&race)
 }

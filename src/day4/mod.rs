@@ -1,4 +1,4 @@
-use std::{str::FromStr, collections::{HashMap}};
+use std::{collections::HashMap, str::FromStr};
 
 use aoc_downloader::download_day;
 
@@ -27,16 +27,41 @@ impl FromStr for Game {
         let game_re = regex!(r"Card\s+(\d+):\s+((?:\d+\s+)*)\|\s+((?:\d+(?:\s+)?)*)");
         let matches = game_re.captures(s).unwrap_or_else(|| panic!("{}", s));
         let id = matches.get(1).unwrap().as_str().parse().unwrap();
-        let winners = matches.get(2).unwrap().as_str().split(char::is_whitespace).filter(|s| !s.is_empty()).map(|n| n.parse().unwrap()).collect();
-        let numbers = matches.get(3).unwrap().as_str().split(char::is_whitespace).filter(|s| !s.is_empty()).map(|n| n.parse().unwrap()).collect();
-        Ok(Game { id, winners, numbers })
+        let winners = matches
+            .get(2)
+            .unwrap()
+            .as_str()
+            .split(char::is_whitespace)
+            .filter(|s| !s.is_empty())
+            .map(|n| n.parse().unwrap())
+            .collect();
+        let numbers = matches
+            .get(3)
+            .unwrap()
+            .as_str()
+            .split(char::is_whitespace)
+            .filter(|s| !s.is_empty())
+            .map(|n| n.parse().unwrap())
+            .collect();
+        Ok(Game {
+            id,
+            winners,
+            numbers,
+        })
     }
 }
 
 impl Game {
     fn get_matches(&self) -> u64 {
-        self.winners.iter()
-            .map(|w| if self.numbers.iter().any(|n| n == w) { 1 } else { 0 })
+        self.winners
+            .iter()
+            .map(|w| {
+                if self.numbers.iter().any(|n| n == w) {
+                    1
+                } else {
+                    0
+                }
+            })
             .sum::<u64>()
     }
 
@@ -50,13 +75,15 @@ impl Game {
     }
 
     fn is_winner(&self) -> bool {
-        self.winners.iter()
+        self.winners
+            .iter()
             .any(|w| self.numbers.iter().any(|n| n == w))
     }
 }
 
 fn parse_input(input: Vec<String>) -> Vec<Game> {
-    input.iter()
+    input
+        .iter()
         .map(|line| Game::from_str(line).unwrap())
         .collect()
 }
@@ -73,9 +100,7 @@ pub fn run_day() {
 }
 
 fn part1(input: &[Game]) -> u64 {
-    input.iter()
-        .map(|g| g.get_score())
-        .sum()
+    input.iter().map(|g| g.get_score()).sum()
 }
 
 fn count_winning_cards(card: usize, winner_cards: &HashMap<usize, u64>) -> u64 {
@@ -91,12 +116,18 @@ fn count_winning_cards(card: usize, winner_cards: &HashMap<usize, u64>) -> u64 {
 
 fn part2(input: &[Game]) -> u64 {
     let mut winning_cards = HashMap::new();
-    input.iter()
+    input
+        .iter()
         .filter(|card| card.is_winner())
-        .for_each(|card| { winning_cards.insert(card.id, card.get_matches()); });
-    winning_cards.keys()
+        .for_each(|card| {
+            winning_cards.insert(card.id, card.get_matches());
+        });
+    winning_cards
+        .keys()
         .map(|card| count_winning_cards(*card, &winning_cards))
-        .sum::<u64>() + input.len() as u64 - winning_cards.len() as u64
+        .sum::<u64>()
+        + input.len() as u64
+        - winning_cards.len() as u64
 }
 
 #[cfg(test)]

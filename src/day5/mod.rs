@@ -1,5 +1,5 @@
-use std::{str::FromStr, fmt::Display};
 use rayon::prelude::*;
+use std::{fmt::Display, str::FromStr};
 
 use aoc_downloader::download_day;
 
@@ -15,7 +15,8 @@ fn get_input() -> Vec<String> {
 }
 
 fn extract_mapping_to_(header: &str, kind: Mapping, input: &[String]) -> Vec<Range> {
-    input.iter()
+    input
+        .iter()
         .skip_while(|line| line != &header)
         .skip(1)
         .take_while(|line| !line.is_empty())
@@ -24,20 +25,48 @@ fn extract_mapping_to_(header: &str, kind: Mapping, input: &[String]) -> Vec<Ran
 }
 
 fn parse_input(input: Vec<String>) -> (Vec<Seed>, Vec<Range>) {
-    let seeds: Vec<Seed> = input[0].split(' ').skip(1).map(|s| Seed::from_str(s).unwrap()).collect();
+    let seeds: Vec<Seed> = input[0]
+        .split(' ')
+        .skip(1)
+        .map(|s| Seed::from_str(s).unwrap())
+        .collect();
 
     let mut mapping = extract_mapping_to_("seed-to-soil map:", Mapping::ToSoil, &input);
-    mapping.append(&mut extract_mapping_to_("soil-to-fertilizer map:", Mapping::ToFertilizer, &input));
-    mapping.append(&mut extract_mapping_to_("fertilizer-to-water map:", Mapping::ToWater, &input));
-    mapping.append(&mut extract_mapping_to_("water-to-light map:", Mapping::ToLight, &input));
-    mapping.append(&mut extract_mapping_to_("light-to-temperature map:", Mapping::ToTemperature, &input));
-    mapping.append(&mut extract_mapping_to_("temperature-to-humidity map:", Mapping::ToHumidity, &input));
-    mapping.append(&mut extract_mapping_to_("humidity-to-location map:", Mapping::ToLocation, &input));
+    mapping.append(&mut extract_mapping_to_(
+        "soil-to-fertilizer map:",
+        Mapping::ToFertilizer,
+        &input,
+    ));
+    mapping.append(&mut extract_mapping_to_(
+        "fertilizer-to-water map:",
+        Mapping::ToWater,
+        &input,
+    ));
+    mapping.append(&mut extract_mapping_to_(
+        "water-to-light map:",
+        Mapping::ToLight,
+        &input,
+    ));
+    mapping.append(&mut extract_mapping_to_(
+        "light-to-temperature map:",
+        Mapping::ToTemperature,
+        &input,
+    ));
+    mapping.append(&mut extract_mapping_to_(
+        "temperature-to-humidity map:",
+        Mapping::ToHumidity,
+        &input,
+    ));
+    mapping.append(&mut extract_mapping_to_(
+        "humidity-to-location map:",
+        Mapping::ToLocation,
+        &input,
+    ));
 
     (seeds, mapping)
 }
 
-#[derive(Clone, Copy, PartialOrd, Ord,PartialEq, Eq, Hash, Debug)]
+#[derive(Clone, Copy, PartialOrd, Ord, PartialEq, Eq, Hash, Debug)]
 struct Seed(usize);
 
 impl Display for Seed {
@@ -50,7 +79,9 @@ impl FromStr for Seed {
     type Err = ();
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Ok(Seed(s.parse().unwrap_or_else(|_| panic!("Can't parse: {}", s))))
+        Ok(Seed(
+            s.parse().unwrap_or_else(|_| panic!("Can't parse: {}", s)),
+        ))
     }
 }
 
@@ -73,8 +104,12 @@ impl Range {
     }
 
     fn from_string(s: &str, kind: Mapping) -> Self {
-        let values: Vec<usize> = s.split(' ')
-            .map(|num| num.parse().unwrap_or_else(|_| panic!("Can't parse: {}", num)))
+        let values: Vec<usize> = s
+            .split(' ')
+            .map(|num| {
+                num.parse()
+                    .unwrap_or_else(|_| panic!("Can't parse: {}", num))
+            })
             .collect();
         Range {
             destination: values[0],
@@ -97,8 +132,6 @@ enum Mapping {
     ToLocation,
 }
 
-
-
 pub fn run_day() {
     let input = get_input();
     let input = parse_input(input);
@@ -111,14 +144,13 @@ pub fn run_day() {
 }
 
 fn apply_map(seeds: &mut Vec<Seed>, mappings: &[Range], kind: Mapping) {
-    seeds.par_iter_mut()
-        .for_each(|s| {
-            for mapping in mappings.iter() {
-                if mapping.kind == kind && mapping.seed_in_range(s) {
-                    return mapping.map_seed(s);
-                }
+    seeds.par_iter_mut().for_each(|s| {
+        for mapping in mappings.iter() {
+            if mapping.kind == kind && mapping.seed_in_range(s) {
+                return mapping.map_seed(s);
             }
-        });
+        }
+    });
 }
 
 fn part1(input: &(Vec<Seed>, Vec<Range>)) -> Seed {
@@ -137,8 +169,13 @@ fn part1(input: &(Vec<Seed>, Vec<Range>)) -> Seed {
 
 fn part2(input: &(Vec<Seed>, Vec<Range>)) -> Seed {
     let (seeds, mappings) = input;
-    let mut seeds = seeds.chunks(2)
-        .flat_map(|chunk| ((chunk[0].0)..(chunk[0].0 + chunk[1].0)).map(Seed).collect::<Vec<Seed>>())
+    let mut seeds = seeds
+        .chunks(2)
+        .flat_map(|chunk| {
+            ((chunk[0].0)..(chunk[0].0 + chunk[1].0))
+                .map(Seed)
+                .collect::<Vec<Seed>>()
+        })
         .collect();
     apply_map(&mut seeds, mappings, Mapping::ToSoil);
     apply_map(&mut seeds, mappings, Mapping::ToFertilizer);

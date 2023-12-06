@@ -26,17 +26,26 @@ fn read_schematic(schematic: &[Vec<char>]) -> (Vec<Number>, Vec<Part>) {
                 positions.insert((r, c));
             } else {
                 if *col != '.' {
-                    parts.push(Part { symbol: *col, position: (r, c) });
+                    parts.push(Part {
+                        symbol: *col,
+                        position: (r, c),
+                    });
                 }
                 if !number.is_empty() {
-                    numbers.push(Number {num: number.parse().unwrap(), positions: positions.clone()});
+                    numbers.push(Number {
+                        num: number.parse().unwrap(),
+                        positions: positions.clone(),
+                    });
                     number.clear();
                     positions.clear();
                 }
             }
         }
         if !number.is_empty() {
-            numbers.push(Number {num: number.parse().unwrap(), positions: positions.clone()});
+            numbers.push(Number {
+                num: number.parse().unwrap(),
+                positions: positions.clone(),
+            });
             number.clear();
             positions.clear();
         }
@@ -45,8 +54,12 @@ fn read_schematic(schematic: &[Vec<char>]) -> (Vec<Number>, Vec<Part>) {
     (numbers, parts)
 }
 
-fn relate_part_numbers(numbers: &Vec<Number>, parts: &Vec<Part>, dimensions: Pos) -> HashMap<Part, Vec<u32>> {
-    let mut part_mapping =  HashMap::new();
+fn relate_part_numbers(
+    numbers: &Vec<Number>,
+    parts: &Vec<Part>,
+    dimensions: Pos,
+) -> HashMap<Part, Vec<u32>> {
+    let mut part_mapping = HashMap::new();
     for part in parts {
         for number in numbers {
             if part.is_part_number(number, dimensions) {
@@ -61,7 +74,10 @@ fn relate_part_numbers(numbers: &Vec<Number>, parts: &Vec<Part>, dimensions: Pos
 }
 
 fn parse_input(input: Vec<String>) -> HashMap<Part, Vec<u32>> {
-    let input = input.iter().map(|l| l.chars().collect()).collect::<Vec<Vec<char>>>();
+    let input = input
+        .iter()
+        .map(|l| l.chars().collect())
+        .collect::<Vec<Vec<char>>>();
     let (numbers, parts) = read_schematic(&input);
     relate_part_numbers(&numbers, &parts, (input.len(), input[0].len()))
 }
@@ -90,7 +106,7 @@ struct Part {
     position: Pos,
 }
 
-impl Part { 
+impl Part {
     fn is_part_number(&self, number: &Number, dimensions: Pos) -> bool {
         const OFFSETS: [(isize, isize); 8] = [
             (-1, 1),
@@ -106,7 +122,9 @@ impl Part {
         for offset in OFFSETS {
             let next_row = self.position.0.checked_add_signed(offset.0);
             let next_col = self.position.1.checked_add_signed(offset.1);
-            if next_row.is_some_and(|r| r < dimensions.0) && next_col.is_some_and(|c| c < dimensions.1) {
+            if next_row.is_some_and(|r| r < dimensions.0)
+                && next_col.is_some_and(|c| c < dimensions.1)
+            {
                 adjacent.insert((next_row.unwrap(), next_col.unwrap()));
             }
         }
