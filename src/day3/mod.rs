@@ -13,7 +13,7 @@ fn get_input() -> Vec<String> {
     reader.lines().collect::<Result<_, _>>().unwrap()
 }
 
-fn read_schematic(schematic: &Vec<Vec<char>>) -> (Vec<Number>, Vec<Part>) {
+fn read_schematic(schematic: &[Vec<char>]) -> (Vec<Number>, Vec<Part>) {
     let mut numbers = Vec::new();
     let mut parts = Vec::new();
 
@@ -61,7 +61,7 @@ fn relate_part_numbers(numbers: &Vec<Number>, parts: &Vec<Part>, dimensions: Pos
 }
 
 fn parse_input(input: Vec<String>) -> HashMap<Part, Vec<u32>> {
-    let input = input.iter().map(|l| l.chars().collect()).collect();
+    let input = input.iter().map(|l| l.chars().collect()).collect::<Vec<Vec<char>>>();
     let (numbers, parts) = read_schematic(&input);
     relate_part_numbers(&numbers, &parts, (input.len(), input[0].len()))
 }

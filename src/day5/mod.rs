@@ -1,5 +1,4 @@
 use std::{str::FromStr, fmt::Display};
-use itertools::Itertools;
 use rayon::prelude::*;
 
 use aoc_downloader::download_day;
@@ -15,7 +14,7 @@ fn get_input() -> Vec<String> {
     reader.lines().collect::<Result<_, _>>().unwrap()
 }
 
-fn extract_mapping_to_(header: &str, kind: Mapping, input: &Vec<String>) -> Vec<Range> {
+fn extract_mapping_to_(header: &str, kind: Mapping, input: &[String]) -> Vec<Range> {
     input.iter()
         .skip_while(|line| line != &header)
         .skip(1)
@@ -86,6 +85,7 @@ impl Range {
     }
 }
 
+#[allow(clippy::enum_variant_names)]
 #[derive(Clone, Copy, Debug, PartialEq)]
 enum Mapping {
     ToSoil,
@@ -110,7 +110,7 @@ pub fn run_day() {
     );
 }
 
-fn apply_map(seeds: &mut Vec<Seed>, mappings: &Vec<Range>, kind: Mapping) {
+fn apply_map(seeds: &mut Vec<Seed>, mappings: &[Range], kind: Mapping) {
     seeds.par_iter_mut()
         .for_each(|s| {
             for mapping in mappings.iter() {
@@ -138,8 +138,7 @@ fn part1(input: &(Vec<Seed>, Vec<Range>)) -> Seed {
 fn part2(input: &(Vec<Seed>, Vec<Range>)) -> Seed {
     let (seeds, mappings) = input;
     let mut seeds = seeds.chunks(2)
-        .map(|chunk| ((chunk[0].0)..(chunk[0].0 + chunk[1].0)).map(|i| Seed(i)).collect::<Vec<Seed>>())
-        .flatten()
+        .flat_map(|chunk| ((chunk[0].0)..(chunk[0].0 + chunk[1].0)).map(Seed).collect::<Vec<Seed>>())
         .collect();
     apply_map(&mut seeds, mappings, Mapping::ToSoil);
     apply_map(&mut seeds, mappings, Mapping::ToFertilizer);
