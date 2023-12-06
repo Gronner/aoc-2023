@@ -15,8 +15,26 @@ fn get_input() -> Vec<String> {
 
 #[derive(Clone, Copy, Debug)]
 struct Race {
-    pub duration: u64,
-    pub record: u64,
+    pub duration: i64,
+    pub record: i64,
+}
+
+impl Race {
+    fn discriminat(&self) -> i64 {
+        // D = t^2 - 4 * -1 * -d
+        self.duration.pow(2) - 4 * self.record
+    }
+
+    fn get_roots(&self) -> (Option<i64>, Option<i64>) {
+        let discriminat = self.discriminat();
+        if discriminat == 0 {
+            // x = -t + sqrt(D)
+            return (Some(-self.duration + discriminat.isqrt()), None);
+        }
+        // x = (-t + sqrt(D))/-2 & x = (-v - sqrt(D))/-2
+        (Some(((self.duration as f64 - (discriminat as f64).sqrt())/2.).floor() as i64 + 1), Some(((self.duration as f64 + (discriminat as f64).sqrt())/2.).ceil() as i64 - 1))
+
+    }
 }
 
 fn parse_input(input: Vec<String>) -> Vec<String> {
@@ -34,45 +52,25 @@ pub fn run_day() {
     );
 }
 
-fn run_race(race: &Race) -> u64 {
-    let mut ways_to_win = 0;
-    let mut speed = race.duration - 1;
-    while (race.duration - speed) != 0 {
-        let distance = (race.duration - speed) * speed;
-        if distance > race.record {
-            ways_to_win += 1;
-        }
-        if let Some(s) = speed.checked_sub(1) {
-            speed = s;
-        } else {
-            break;
-        }
-    }
-    ways_to_win
-}
-
-fn part1(input: &[String]) -> u64 {
+fn part1(input: &[String]) -> i64 {
     let times = input[0]
         .split(' ')
         .filter_map(|split| split.parse().ok())
-        .collect::<Vec<u64>>();
+        .collect::<Vec<i64>>();
     let distances = input[1]
         .split(' ')
         .filter_map(|split| split.parse().ok())
-        .collect::<Vec<u64>>();
-    let races = zip(times, distances)
+        .collect::<Vec<i64>>();
+    zip(times, distances)
         .map(|(duration, record)| Race { duration, record })
-        .collect::<Vec<Race>>();
-
-    let mut result = 1;
-    for race in races {
-        result *= run_race(&race);
-    }
-    result
+        .map(|race| race.get_roots())
+        .inspect(|s| println!("{:?}", s))
+        .map(|(start, end)| end.unwrap() - start.unwrap() + 1)
+        .product()
 }
 
-fn part2(input: &[String]) -> u64 {
-    let race = Race {
+fn part2(input: &[String]) -> i64 {
+    let roots = Race {
         duration: input[0]
             .split_whitespace()
             .collect::<String>()
@@ -89,8 +87,8 @@ fn part2(input: &[String]) -> u64 {
             .unwrap()
             .parse()
             .unwrap(),
-    };
-    run_race(&race)
+    }.get_roots();
+    roots.1.unwrap() - roots.0.unwrap() + 1
 }
 
 #[cfg(test)]

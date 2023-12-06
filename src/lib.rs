@@ -1,4 +1,5 @@
 #![feature(int_roundings)]
+#![feature(isqrt)]
 #[macro_use]
 mod utils;
 mod day1;
