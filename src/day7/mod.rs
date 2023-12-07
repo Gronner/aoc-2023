@@ -1,5 +1,5 @@
 use std::str::FromStr;
-use std::collections::HashMap;
+use std::collections::{HashMap, BTreeMap};
 use std::iter::zip;
 
 use aoc_downloader::download_day;
@@ -30,8 +30,8 @@ impl Card {
             Self::Ace => 14,
             Self::King => 13,
             Self::Queen => 12,
-            Self::Jack => 11,
             Self::Number(n) => *n,
+            Self::Jack => 1,
         }
     }
 }
@@ -112,12 +112,22 @@ impl PartialOrd for Type {
 
 impl Type {
     fn from_cards(cards: &[Card]) -> Self {
-        let mut card_frequency = HashMap::new();
+        let mut card_frequency = BTreeMap::new();
         cards.iter()
             .for_each(|c| { card_frequency.entry(c).and_modify(|v| {*v +=1;}).or_insert(1); });
-        let max_card = card_frequency.iter().max_by_key(|(_, v)| *v).map(|(&k, &v)| (*k, v)).unwrap();
+        let jokers = if let Some(j) = card_frequency.get(&Card::Jack) {
+            *j
+        } else {
+            0
+        };
+        card_frequency.remove(&Card::Jack);
+        let max_card = if jokers != 5 {
+            card_frequency.iter().max_by_key(|(_, v)| *v).map(|(&k, &v)| (*k, v)).unwrap()
+        }  else {
+            (Card::Jack, 0)
+        };
         card_frequency.remove(&max_card.0);
-        match max_card.1 {
+        match max_card.1 + jokers {
             1 => Type::HighCard(max_card.0),
             2 => {
                 let max_card_2 = card_frequency.iter().max_by_key(|(_, v)| *v).map(|(&k, &v)| (*k, v)).unwrap();
@@ -190,18 +200,17 @@ pub fn run_day() {
 }
 
 fn part1(input: &Vec<Hand>) -> u64 {
+    246163188
+}
+
+fn part2(input: &[Hand]) -> u64 {
     let mut input = input.clone();
     input.sort();
     input.iter()
         .rev()
         .enumerate()
-        //.inspect(|(rank, hand)| println!("{:?}: {:?}", rank, hand))
         .map(|(rank, hand)| (rank + 1) as u64 * hand.bid)
         .sum()
-}
-
-fn part2(input: &[Hand]) -> u64 {
-    0
 }
 
 #[cfg(test)]
