@@ -1,6 +1,5 @@
 use std::cmp::Ordering;
 use std::collections::BTreeMap;
-use std::iter::zip;
 use std::str::FromStr;
 
 use aoc_downloader::download_day;
@@ -16,27 +15,14 @@ fn get_input() -> Vec<String> {
     reader.lines().collect::<Result<_, _>>().unwrap()
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 enum Card {
-    Ace,
-    King,
-    Queen,
-    Jack,
-    Number(u64),
     Joker,
-}
-
-impl Card {
-    fn as_value(&self) -> u64 {
-        match self {
-            Self::Ace => 14,
-            Self::King => 13,
-            Self::Queen => 12,
-            Self::Jack => 11,
-            Self::Number(n) => *n,
-            Self::Joker => 1,
-        }
-    }
+    Number(u64),
+    Jack,
+    Queen,
+    King,
+    Ace,
 }
 
 impl From<char> for Card {
@@ -59,59 +45,15 @@ impl From<char> for Card {
     }
 }
 
-impl Ord for Card {
-    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        other.as_value().cmp(&self.as_value())
-    }
-}
-
-impl PartialOrd for Card {
-    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        Some(other.cmp(other))
-    }
-}
-
-#[derive(Clone, Debug, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 enum Type {
-    FiveOfAKind(Card),
-    FourOfAKind(Card),
-    FullHouse(Card, Card),
-    ThreeOfAKind(Card),
-    TwoPair(Card, Card),
-    OnePair(Card),
-    HighCard(Card),
-}
-
-impl Type {
-    fn as_value(&self) -> u64 {
-        match self {
-            Self::FiveOfAKind(_) => 7,
-            Self::FourOfAKind(_) => 6,
-            Self::FullHouse(_, _) => 5,
-            Self::ThreeOfAKind(_) => 4,
-            Self::TwoPair(_, _) => 3,
-            Self::OnePair(_) => 2,
-            Self::HighCard(_) => 1,
-        }
-    }
-}
-
-impl PartialEq for Type {
-    fn eq(&self, other: &Self) -> bool {
-        self == other
-    }
-}
-
-impl Ord for Type {
-    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        other.as_value().cmp(&self.as_value())
-    }
-}
-
-impl PartialOrd for Type {
-    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        Some(self.cmp(other))
-    }
+    HighCard(Vec<Card>),
+    OnePair(Vec<Card>),
+    TwoPair(Vec<Card>),
+    ThreeOfAKind(Vec<Card>),
+    FullHouse(Vec<Card>),
+    FourOfAKind(Vec<Card>),
+    FiveOfAKind(Vec<Card>),
 }
 
 impl Type {
@@ -142,7 +84,7 @@ impl Type {
         };
         card_frequency.remove(&max_card.0);
         match max_card.1 + jokers {
-            1 => Type::HighCard(max_card.0),
+            1 => Type::HighCard(cards.to_vec()),
             2 => {
                 let max_card_2 = card_frequency
                     .iter()
@@ -150,9 +92,9 @@ impl Type {
                     .map(|(&k, &v)| (*k, v))
                     .unwrap();
                 if max_card_2.1 == 2 {
-                    Type::TwoPair(max_card.0, max_card_2.0)
+                    Type::TwoPair(cards.to_vec())
                 } else {
-                    Type::OnePair(max_card.0)
+                    Type::OnePair(cards.to_vec())
                 }
             }
             3 => {
@@ -162,13 +104,13 @@ impl Type {
                     .map(|(&k, &v)| (*k, v))
                     .unwrap();
                 if max_card_2.1 == 2 {
-                    Type::FullHouse(max_card.0, max_card_2.0)
+                    Type::FullHouse(cards.to_vec())
                 } else {
-                    Type::ThreeOfAKind(max_card.0)
+                    Type::ThreeOfAKind(cards.to_vec())
                 }
             }
-            4 => Type::FourOfAKind(max_card.0),
-            5 => Type::FiveOfAKind(max_card.0),
+            4 => Type::FourOfAKind(cards.to_vec()),
+            5 => Type::FiveOfAKind(cards.to_vec()),
             n => panic!("To many cards: {}", n),
         }
     }
@@ -177,19 +119,12 @@ impl Type {
 #[derive(Clone, Debug, PartialEq, Eq)]
 struct Hand {
     hand: Type,
-    cards: Vec<Card>,
     pub bid: u64,
 }
 
 impl Ord for Hand {
     fn cmp(&self, other: &Self) -> Ordering {
-        match self.hand.cmp(&other.hand) {
-            std::cmp::Ordering::Equal => zip(&self.cards, &other.cards)
-                .map(|(s, o)| s.cmp(o))
-                .filter(|&result| result != std::cmp::Ordering::Equal)
-                .collect::<Vec<_>>()[0],
-            ord => ord,
-        }
+        self.hand.cmp(&other.hand)
     }
 }
 
@@ -207,7 +142,6 @@ impl FromStr for Hand {
         let cards: Vec<Card> = split[0].chars().map(Card::from).collect();
         Ok(Hand {
             hand: Type::from_cards(&cards),
-            cards,
             bid: split[1].parse().unwrap(),
         })
     }
@@ -230,7 +164,7 @@ pub fn run_day() {
 
 fn play_cards(input: &[Hand]) -> u64 {
     let mut input = input.to_vec();
-    input.sort();
+    input.sort_by(|a, b| b.cmp(a));
     input
         .iter()
         .rev()
@@ -240,15 +174,22 @@ fn play_cards(input: &[Hand]) -> u64 {
 }
 
 fn part1(input: &[String]) -> u64 {
-    play_cards(&input.iter().map(|s| Hand::from_str(s).unwrap()).collect::<Vec<_>>())
+    play_cards(
+        &input
+            .iter()
+            .map(|s| Hand::from_str(s).unwrap())
+            .collect::<Vec<_>>(),
+    )
 }
 
 fn part2(input: &[String]) -> u64 {
-    play_cards(&input
-        .iter()
-        .map(|s| s.replace('J', "X"))
-        .map(|s| Hand::from_str(&s).unwrap())
-        .collect::<Vec<_>>())
+    play_cards(
+        &input
+            .iter()
+            .map(|s| s.replace('J', "X"))
+            .map(|s| Hand::from_str(&s).unwrap())
+            .collect::<Vec<_>>(),
+    )
 }
 
 #[cfg(test)]
