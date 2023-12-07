@@ -73,45 +73,24 @@ impl Type {
             0
         };
         card_frequency.remove(&Card::Joker);
-        let max_card = if jokers != 5 {
-            card_frequency
-                .iter()
-                .max_by_key(|(_, v)| *v)
-                .map(|(&k, &v)| (*k, v))
-                .unwrap()
-        } else {
-            (Card::Joker, 0)
-        };
-        card_frequency.remove(&max_card.0);
-        match max_card.1 + jokers {
-            1 => Type::HighCard(cards.to_vec()),
-            2 => {
-                let max_card_2 = card_frequency
-                    .iter()
-                    .max_by_key(|(_, v)| *v)
-                    .map(|(&k, &v)| (*k, v))
-                    .unwrap();
-                if max_card_2.1 == 2 {
-                    Type::TwoPair(cards.to_vec())
-                } else {
-                    Type::OnePair(cards.to_vec())
-                }
-            }
-            3 => {
-                let max_card_2 = card_frequency
-                    .iter()
-                    .max_by_key(|(_, v)| *v)
-                    .map(|(&k, &v)| (*k, v))
-                    .unwrap();
-                if max_card_2.1 == 2 {
-                    Type::FullHouse(cards.to_vec())
-                } else {
-                    Type::ThreeOfAKind(cards.to_vec())
-                }
-            }
-            4 => Type::FourOfAKind(cards.to_vec()),
-            5 => Type::FiveOfAKind(cards.to_vec()),
-            n => panic!("To many cards: {}", n),
+        let max_count = card_frequency
+            .iter()
+            .max_by_key(|(_, v)| *v)
+            .map(|(_, v)| *v)
+            .unwrap_or(0)
+            + jokers;
+        let different_cards = card_frequency.keys().count();
+
+        // max_count - different_cards is specific for each hand, to prevent negative numbers a
+        // offset of 4 is introduced
+        match 4 + max_count - different_cards {
+            0 => Self::HighCard(cards.to_vec()),
+            2 => Self::OnePair(cards.to_vec()),
+            3 => Self::TwoPair(cards.to_vec()),
+            4 => Self::ThreeOfAKind(cards.to_vec()),
+            5 => Self::FullHouse(cards.to_vec()),
+            6 => Self::FourOfAKind(cards.to_vec()),
+            _ => Self::FiveOfAKind(cards.to_vec()),
         }
     }
 }
