@@ -1,6 +1,7 @@
-use std::str::FromStr;
-use std::collections::{HashMap, BTreeMap};
+use std::cmp::Ordering;
+use std::collections::BTreeMap;
 use std::iter::zip;
+use std::str::FromStr;
 
 use aoc_downloader::download_day;
 
@@ -22,16 +23,18 @@ enum Card {
     Queen,
     Jack,
     Number(u64),
+    Joker,
 }
 
 impl Card {
-    fn to_value(&self) -> u64 {
+    fn as_value(&self) -> u64 {
         match self {
             Self::Ace => 14,
             Self::King => 13,
             Self::Queen => 12,
+            Self::Jack => 11,
             Self::Number(n) => *n,
-            Self::Jack => 1,
+            Self::Joker => 1,
         }
     }
 }
@@ -44,6 +47,7 @@ impl From<char> for Card {
             'Q' => Self::Queen,
             'J' => Self::Jack,
             'T' => Self::Number(10),
+            'X' => Self::Joker,
             e => {
                 if e.is_ascii_digit() {
                     Self::Number(e.to_digit(10).unwrap() as u64)
@@ -57,13 +61,13 @@ impl From<char> for Card {
 
 impl Ord for Card {
     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        other.partial_cmp(self).unwrap()
+        other.as_value().cmp(&self.as_value())
     }
 }
 
 impl PartialOrd for Card {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        self.to_value().partial_cmp(&other.to_value())
+        Some(other.cmp(other))
     }
 }
 
@@ -79,7 +83,7 @@ enum Type {
 }
 
 impl Type {
-    fn to_value(&self) -> u64 {
+    fn as_value(&self) -> u64 {
         match self {
             Self::FiveOfAKind(_) => 7,
             Self::FourOfAKind(_) => 6,
@@ -100,51 +104,69 @@ impl PartialEq for Type {
 
 impl Ord for Type {
     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        other.partial_cmp(self).unwrap()
+        other.as_value().cmp(&self.as_value())
     }
 }
 
 impl PartialOrd for Type {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        self.to_value().partial_cmp(&other.to_value())
+        Some(self.cmp(other))
     }
 }
 
 impl Type {
     fn from_cards(cards: &[Card]) -> Self {
         let mut card_frequency = BTreeMap::new();
-        cards.iter()
-            .for_each(|c| { card_frequency.entry(c).and_modify(|v| {*v +=1;}).or_insert(1); });
-        let jokers = if let Some(j) = card_frequency.get(&Card::Jack) {
+        cards.iter().for_each(|c| {
+            card_frequency
+                .entry(c)
+                .and_modify(|v| {
+                    *v += 1;
+                })
+                .or_insert(1);
+        });
+        let jokers = if let Some(j) = card_frequency.get(&Card::Joker) {
             *j
         } else {
             0
         };
-        card_frequency.remove(&Card::Jack);
+        card_frequency.remove(&Card::Joker);
         let max_card = if jokers != 5 {
-            card_frequency.iter().max_by_key(|(_, v)| *v).map(|(&k, &v)| (*k, v)).unwrap()
-        }  else {
-            (Card::Jack, 0)
+            card_frequency
+                .iter()
+                .max_by_key(|(_, v)| *v)
+                .map(|(&k, &v)| (*k, v))
+                .unwrap()
+        } else {
+            (Card::Joker, 0)
         };
         card_frequency.remove(&max_card.0);
         match max_card.1 + jokers {
             1 => Type::HighCard(max_card.0),
             2 => {
-                let max_card_2 = card_frequency.iter().max_by_key(|(_, v)| *v).map(|(&k, &v)| (*k, v)).unwrap();
+                let max_card_2 = card_frequency
+                    .iter()
+                    .max_by_key(|(_, v)| *v)
+                    .map(|(&k, &v)| (*k, v))
+                    .unwrap();
                 if max_card_2.1 == 2 {
                     Type::TwoPair(max_card.0, max_card_2.0)
                 } else {
                     Type::OnePair(max_card.0)
                 }
-            },
+            }
             3 => {
-                let max_card_2 = card_frequency.iter().max_by_key(|(_, v)| *v).map(|(&k, &v)| (*k, v)).unwrap();
+                let max_card_2 = card_frequency
+                    .iter()
+                    .max_by_key(|(_, v)| *v)
+                    .map(|(&k, &v)| (*k, v))
+                    .unwrap();
                 if max_card_2.1 == 2 {
                     Type::FullHouse(max_card.0, max_card_2.0)
                 } else {
                     Type::ThreeOfAKind(max_card.0)
                 }
-            },
+            }
             4 => Type::FourOfAKind(max_card.0),
             5 => Type::FiveOfAKind(max_card.0),
             n => panic!("To many cards: {}", n),
@@ -152,19 +174,28 @@ impl Type {
     }
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, Ord)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 struct Hand {
     hand: Type,
     cards: Vec<Card>,
     pub bid: u64,
 }
 
+impl Ord for Hand {
+    fn cmp(&self, other: &Self) -> Ordering {
+        match self.hand.cmp(&other.hand) {
+            std::cmp::Ordering::Equal => zip(&self.cards, &other.cards)
+                .map(|(s, o)| s.cmp(o))
+                .filter(|&result| result != std::cmp::Ordering::Equal)
+                .collect::<Vec<_>>()[0],
+            ord => ord,
+        }
+    }
+}
+
 impl PartialOrd for Hand {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        match self.hand.cmp(&other.hand) {
-            std::cmp::Ordering::Equal => Some(zip(&self.cards, &other.cards).map(|(s, o)| s.cmp(&o)).filter(|&result| result != std::cmp::Ordering::Equal).collect::<Vec<_>>()[0]),
-            ord => Some(ord),
-        }
+        Some(self.cmp(other))
     }
 }
 
@@ -173,7 +204,7 @@ impl FromStr for Hand {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let split: Vec<&str> = s.split(' ').collect();
-        let cards: Vec<Card> = split[0].chars().map(|c| Card::from(c)).collect();
+        let cards: Vec<Card> = split[0].chars().map(Card::from).collect();
         Ok(Hand {
             hand: Type::from_cards(&cards),
             cards,
@@ -182,10 +213,8 @@ impl FromStr for Hand {
     }
 }
 
-fn parse_input(input: Vec<String>) -> Vec<Hand> {
-    input.iter()
-        .map(|s| Hand::from_str(s).unwrap())
-        .collect()
+fn parse_input(input: Vec<String>) -> Vec<String> {
+    input
 }
 
 pub fn run_day() {
@@ -199,18 +228,27 @@ pub fn run_day() {
     );
 }
 
-fn part1(input: &Vec<Hand>) -> u64 {
-    246163188
-}
-
-fn part2(input: &[Hand]) -> u64 {
-    let mut input = input.clone();
+fn play_cards(input: &[Hand]) -> u64 {
+    let mut input = input.to_vec();
     input.sort();
-    input.iter()
+    input
+        .iter()
         .rev()
         .enumerate()
         .map(|(rank, hand)| (rank + 1) as u64 * hand.bid)
         .sum()
+}
+
+fn part1(input: &[String]) -> u64 {
+    play_cards(&input.iter().map(|s| Hand::from_str(s).unwrap()).collect::<Vec<_>>())
+}
+
+fn part2(input: &[String]) -> u64 {
+    play_cards(&input
+        .iter()
+        .map(|s| s.replace('J', "X"))
+        .map(|s| Hand::from_str(&s).unwrap())
+        .collect::<Vec<_>>())
 }
 
 #[cfg(test)]
@@ -220,12 +258,12 @@ mod tests {
     #[test]
     fn part1_output() {
         let input = parse_input(get_input());
-        assert_eq!(2486, part1(&input));
+        assert_eq!(246163188, part1(&input));
     }
 
     #[test]
     fn part2_output() {
         let input = parse_input(get_input());
-        assert_eq!(87984, part2(&input));
+        assert_eq!(245794069, part2(&input));
     }
 }

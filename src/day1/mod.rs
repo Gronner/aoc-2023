@@ -69,13 +69,13 @@ mod tests {
     use super::*;
 
     #[test]
-    fn day0_part1_output() {
+    fn part1_output() {
         let input = parse_input(get_input());
         assert_eq!(54390, part1(&input));
     }
 
     #[test]
-    fn day0_part2_output() {
+    fn part2_output() {
         let input = parse_input(get_input());
         assert_eq!(54277, part2(&input));
     }

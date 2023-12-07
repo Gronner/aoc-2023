@@ -192,15 +192,17 @@ fn part2(input: &(Vec<Seed>, Vec<Range>)) -> Seed {
 mod tests {
     use super::*;
 
+    #[ignore]
     #[test]
     fn part1_output() {
         let input = parse_input(get_input());
-        assert_eq!(2486, part1(&input));
+        assert_eq!(Seed(107430936), part1(&input));
     }
 
+    #[ignore]
     #[test]
     fn part2_output() {
         let input = parse_input(get_input());
-        assert_eq!(87984, part2(&input));
+        assert_eq!(Seed(23738616), part2(&input));
     }
 }

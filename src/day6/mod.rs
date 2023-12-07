@@ -32,8 +32,10 @@ impl Race {
             return (Some(-self.duration + discriminat.isqrt()), None);
         }
         // x = (-t + sqrt(D))/-2 & x = (-v - sqrt(D))/-2
-        (Some(((self.duration as f64 - (discriminat as f64).sqrt())/2.).floor() as i64 + 1), Some(((self.duration as f64 + (discriminat as f64).sqrt())/2.).ceil() as i64 - 1))
-
+        (
+            Some(((self.duration as f64 - (discriminat as f64).sqrt()) / 2.).floor() as i64 + 1),
+            Some(((self.duration as f64 + (discriminat as f64).sqrt()) / 2.).ceil() as i64 - 1),
+        )
     }
 }
 
@@ -64,7 +66,6 @@ fn part1(input: &[String]) -> i64 {
     zip(times, distances)
         .map(|(duration, record)| Race { duration, record })
         .map(|race| race.get_roots())
-        .inspect(|s| println!("{:?}", s))
         .map(|(start, end)| end.unwrap() - start.unwrap() + 1)
         .product()
 }
@@ -87,7 +88,8 @@ fn part2(input: &[String]) -> i64 {
             .unwrap()
             .parse()
             .unwrap(),
-    }.get_roots();
+    }
+    .get_roots();
     roots.1.unwrap() - roots.0.unwrap() + 1
 }
 
