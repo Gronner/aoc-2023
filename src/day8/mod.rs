@@ -1,5 +1,5 @@
-use std::collections::HashMap;
 use num::Integer;
+use std::collections::HashMap;
 
 use aoc_downloader::download_day;
 
@@ -18,11 +18,21 @@ type Map = HashMap<String, (String, String)>;
 type Directions = Vec<char>;
 
 fn parse_input(input: Vec<String>) -> (Directions, Map) {
-    let re = regex!(r"([12A-Z]{3}) = \(([12A-Z]{3}), ([12A-Z]{3})\)");
+    let re = regex!(r"(\w{3}) = \((\w{3}), (\w{3})\)");
     let directions = input[0].chars().collect();
     let mut map = HashMap::new();
-    input[2..].iter().map(|l| re.captures(l).unwrap())
-        .for_each(|cap| { map.insert(cap.get(1).unwrap().as_str().to_string(), (cap.get(2).unwrap().as_str().to_string(), cap.get(3).unwrap().as_str().to_string()));});
+    input[2..]
+        .iter()
+        .map(|l| re.captures(l).unwrap())
+        .for_each(|cap| {
+            map.insert(
+                cap.get(1).unwrap().as_str().to_string(),
+                (
+                    cap.get(2).unwrap().as_str().to_string(),
+                    cap.get(3).unwrap().as_str().to_string(),
+                ),
+            );
+        });
 
     (directions, map)
 }
@@ -38,47 +48,35 @@ pub fn run_day() {
     );
 }
 
-fn part1(input: &(Directions, Map)) -> usize {
-    let (directions, map) = input;
-    let mut pos = String::from("AAA");
+fn count_steps(start: &str, goal: fn(&str) -> bool, map: &Map, directions: &Directions) -> usize {
+    let mut pos = start.to_string();
     let mut steps = 0;
-    while pos != "ZZZ" {
-        let direction = directions[steps % input.0.len()];
-        if direction == 'L' {
-            pos = map.get(&pos).unwrap().0.clone()
-        } else {
-            pos = map.get(&pos).unwrap().1.clone()
-        }
+    while goal(&pos) {
+        let direction = directions[steps % directions.len()];
+        pos = match direction {
+            'L' => map.get(&pos).unwrap().0.clone(),
+            'R' => map.get(&pos).unwrap().1.clone(),
+            c => panic!("Unexpected character: {}", c),
+        };
         steps += 1;
     }
     steps
 }
 
+fn part1(input: &(Directions, Map)) -> usize {
+    let (directions, map) = input;
+    count_steps("AAA", |pos| { pos != "ZZZ" }, map, directions)
+}
+
 fn part2(input: &(Directions, Map)) -> usize {
     let (directions, map) = input;
-    let paths = map.keys().filter(|node| node.ends_with("A"))
+    map
+        .keys()
+        .filter(|node| node.ends_with('A'))
         .map(|pos| {
-            let mut path = Vec::new();
-            path.push(pos.clone());
-            let mut p = pos.clone();
-            let mut steps = 0;
-            while !p.ends_with("Z") {
-                let direction = directions[steps % input.0.len()];
-                if direction == 'L' {
-                    p = map.get(&p).unwrap().0.clone();
-                    path.push(p.clone());
-                } else {
-                    p = map.get(&p).unwrap().1.clone();
-                    path.push(p.clone());
-                }
-                steps += 1;
-            }
-            path
+            count_steps(pos, |pos| { !pos.ends_with('Z') }, map, directions)
         })
-    .collect::<Vec<Vec<_>>>();
-    println!("Reached");
-    let cycle_lengths = paths.iter().map(|path| path.len() - 1).collect::<Vec<_>>();
-    cycle_lengths.iter().skip(1).fold(cycle_lengths[0], |lcm, clen| clen.lcm(&lcm))
+        .fold(1, |lcm, clen| lcm.lcm(&clen))
 }
 
 #[cfg(test)]
