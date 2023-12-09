@@ -1,5 +1,6 @@
 use aoc_downloader::download_day;
 use itertools::Itertools;
+use std::ops::{Add, Sub};
 
 const DAY: u32 = 9;
 
@@ -44,40 +45,34 @@ impl Derive for &Vec<i64> {
     }
 }
 
-fn part1(input: &[Vec<i64>]) -> i64 {
-    input
+fn polate(sequence: &[i64], op: fn(i64, &Vec<i64>) -> i64) -> i64 {
+    let mut stack: Vec<Vec<i64>> = vec![sequence.to_vec()];
+    while stack.last().unwrap().iter().any(|n| *n != 0) {
+        stack.push(stack.last().unwrap().derive());
+    }
+    stack
         .iter()
-        .map(|sequence| {
-            let mut stack: Vec<Vec<i64>> = vec![sequence.clone()];
-            while stack.last().unwrap().iter().any(|n| *n != 0) {
-                stack.push(stack.last().unwrap().derive());
-            }
-            stack
-                .iter()
-                .rev()
-                .inspect(|seq| println!("{:?}", seq))
-                .fold(0, |acc, sequence| acc + sequence.last().unwrap())
-        })
-        .sum()
+        .rev()
+        .inspect(|seq| println!("{:?}", seq))
+        .fold(0, op)
+}
+
+fn forward(acc: i64, sequence: &Vec<i64>) -> i64 {
+    sequence.last().unwrap().add(acc)
+}
+
+fn part1(input: &[Vec<i64>]) -> i64 {
+    input.iter().map(|sequence| polate(sequence, forward)).sum()
+}
+
+fn backward(acc: i64, sequence: &Vec<i64>) -> i64 {
+    sequence.first().unwrap().sub(acc)
 }
 
 fn part2(input: &[Vec<i64>]) -> i64 {
     input
         .iter()
-        .map(|sequence| {
-            let mut stack: Vec<Vec<i64>> = vec![sequence.clone()];
-            while stack.last().unwrap().iter().any(|n| *n != 0) {
-                stack.push(stack.last().unwrap().derive());
-            }
-            stack
-                .iter()
-                .rev()
-                .inspect(|seq| println!("{:?}", seq))
-                .fold(0, |acc, sequence| {
-                    println!("{acc}");
-                    sequence.first().unwrap() - acc
-                })
-        })
+        .map(|sequence| polate(sequence, backward))
         .sum()
 }
 
@@ -88,12 +83,12 @@ mod tests {
     #[test]
     fn part1_output() {
         let input = parse_input(get_input());
-        assert_eq!(2486, part1(&input));
+        assert_eq!(1702218515, part1(&input));
     }
 
     #[test]
     fn part2_output() {
         let input = parse_input(get_input());
-        assert_eq!(87984, part2(&input));
+        assert_eq!(925, part2(&input));
     }
 }
