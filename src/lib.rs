@@ -1,5 +1,6 @@
 #![feature(int_roundings)]
 #![feature(isqrt)]
+#![feature(iter_map_windows)]
 #[macro_use]
 mod utils;
 mod day1;
@@ -10,6 +11,7 @@ mod day5;
 mod day6;
 mod day7;
 mod day8;
+mod day9;
 
 pub fn get_days() -> Vec<fn()> {
     vec![
@@ -21,5 +23,6 @@ pub fn get_days() -> Vec<fn()> {
         day6::run_day,
         day7::run_day,
         day8::run_day,
+        day9::run_day,
     ]
 }

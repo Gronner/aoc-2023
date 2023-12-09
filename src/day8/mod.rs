@@ -65,17 +65,14 @@ fn count_steps(start: &str, goal: fn(&str) -> bool, map: &Map, directions: &Dire
 
 fn part1(input: &(Directions, Map)) -> usize {
     let (directions, map) = input;
-    count_steps("AAA", |pos| { pos != "ZZZ" }, map, directions)
+    count_steps("AAA", |pos| pos != "ZZZ", map, directions)
 }
 
 fn part2(input: &(Directions, Map)) -> usize {
     let (directions, map) = input;
-    map
-        .keys()
+    map.keys()
         .filter(|node| node.ends_with('A'))
-        .map(|pos| {
-            count_steps(pos, |pos| { !pos.ends_with('Z') }, map, directions)
-        })
+        .map(|pos| count_steps(pos, |pos| !pos.ends_with('Z'), map, directions))
         .fold(1, |lcm, clen| lcm.lcm(&clen))
 }
 
