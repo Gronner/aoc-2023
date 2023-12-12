@@ -216,12 +216,12 @@ mod tests {
     #[test]
     fn part1_output() {
         let input = parse_input(get_input());
-        assert_eq!(2486, part1(&input));
+        assert_eq!(7012, part1(&input));
     }
 
     #[test]
     fn part2_output() {
         let input = parse_input(get_input());
-        assert_eq!(87984, part2(&input));
+        assert_eq!(395, part2(&input));
     }
 }

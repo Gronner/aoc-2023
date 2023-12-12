@@ -133,12 +133,12 @@ mod tests {
     #[test]
     fn part1_output() {
         let input = parse_input(get_input());
-        assert_eq!(2486, part1(&input));
+        assert_eq!(9686930, part1(&input));
     }
 
     #[test]
     fn part2_output() {
         let input = parse_input(get_input());
-        assert_eq!(87984, part2(&input));
+        assert_eq!(630728425490, part2(&input));
     }
 }
