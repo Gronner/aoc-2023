@@ -159,7 +159,7 @@ fn part1(input: &(Pos, Map)) -> usize {
         let moves = map.get(&pos).unwrap();
         pos = if moves.0 == prev_pos {
             prev_pos = pos;
-            moves.1 
+            moves.1
         } else {
             prev_pos = pos;
             moves.0
@@ -169,7 +169,11 @@ fn part1(input: &(Pos, Map)) -> usize {
     steps / 2 + 1
 }
 
-fn part2(input: &(Pos, Map)) -> usize {
+fn determinate(lhs: &Pos, rhs: &Pos) -> i64 {
+    TryInto::<i64>::try_into(lhs.0 * rhs.1).unwrap() - TryInto::<i64>::try_into(lhs.1 * rhs.0).unwrap()
+}
+
+fn part2(input: &(Pos, Map)) -> i64{
     let (start, map) = input;
     let mut pos = map.get(start).unwrap().0;
     let mut prev_pos = *start;
@@ -185,7 +189,13 @@ fn part2(input: &(Pos, Map)) -> usize {
         };
         boundary.push(pos);
     }
-    0
+    // Makes windows easier, as we need start at the end again
+    boundary.push(*start);
+    // Apply Sholace formula, due to start trick we need to add 2 instead of 1 and deduct the
+    // boundaries area 
+    boundary.windows(2)
+        .map(|win| determinate(&win[0], &win[1]))
+        .sum::<i64>().abs() / 2 + 2 - boundary.len() as i64 / 2
 }
 
 #[cfg(test)]

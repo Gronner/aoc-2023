@@ -53,7 +53,6 @@ fn polate(sequence: &[i64], op: fn(i64, &Vec<i64>) -> i64) -> i64 {
     stack
         .iter()
         .rev()
-        .inspect(|seq| println!("{:?}", seq))
         .fold(0, op)
 }
 
