@@ -84,21 +84,21 @@ fn manhatten_distance(pos_a: &Pos, pos_b: &Pos) -> usize {
         + (pos_a.1 as isize - pos_b.1 as isize).unsigned_abs()
 }
 
-fn part1(input: &Input) -> usize {
+fn expand(input: &Input, expansion_rate: usize) -> Vec<Pos> {
     let (positions, ygaps, xgaps) = input;
-    println!("{:?}", xgaps);
-    println!("{:?}", ygaps);
-    let _distance_sum = 0;
-    let positions = positions
+    positions
         .iter()
         .map(|(y, x)| {
             (
-                y + ygaps.iter().filter(|ygap| y > ygap).count(),
-                x + xgaps.iter().filter(|xgap| x > xgap).count(),
+                y + ygaps.iter().filter(|ygap| y > ygap).count() * expansion_rate,
+                x + xgaps.iter().filter(|xgap| x > xgap).count() * expansion_rate,
             )
         })
-        .collect::<Vec<Pos>>();
-    positions
+        .collect::<Vec<Pos>>()
+}
+
+fn part1(input: &Input) -> usize {
+    expand(input, 1)
         .iter()
         .combinations(2)
         .map(|vec| manhatten_distance(vec[0], vec[1]))
@@ -106,20 +106,7 @@ fn part1(input: &Input) -> usize {
 }
 
 fn part2(input: &Input) -> usize {
-    let (positions, ygaps, xgaps) = input;
-    println!("{:?}", xgaps);
-    println!("{:?}", ygaps);
-    let _distance_sum = 0;
-    let positions = positions
-        .iter()
-        .map(|(y, x)| {
-            (
-                y + ygaps.iter().filter(|ygap| y > ygap).count() * 999_999,
-                x + xgaps.iter().filter(|xgap| x > xgap).count() * 999_999,
-            )
-        })
-        .collect::<Vec<Pos>>();
-    positions
+    expand(input, 999_999)
         .iter()
         .combinations(2)
         .map(|vec| manhatten_distance(vec[0], vec[1]))
