@@ -50,10 +50,7 @@ fn polate(sequence: &[i64], op: fn(i64, &Vec<i64>) -> i64) -> i64 {
     while stack.last().unwrap().iter().any(|n| *n != 0) {
         stack.push(stack.last().unwrap().derive());
     }
-    stack
-        .iter()
-        .rev()
-        .fold(0, op)
+    stack.iter().rev().fold(0, op)
 }
 
 fn forward(acc: i64, sequence: &Vec<i64>) -> i64 {
