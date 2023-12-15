@@ -61,6 +61,7 @@ dependencies = [
  "cache-macro",
  "cached",
  "itertools",
+ "multimap",
  "num",
  "once_cell",
  "rayon",
@@ -776,6 +777,15 @@ dependencies = [
  "libc",
  "wasi",
  "windows-sys 0.48.0",
+]
+
+[[package]]
+name = "multimap"
+version = "0.9.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e1a5d38b9b352dbd913288736af36af41c48d61b1a8cd34bcecd727561b7d511"
+dependencies = [
+ "serde 1.0.193",
 ]
 
 [[package]]

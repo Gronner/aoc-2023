@@ -16,9 +16,7 @@ fn get_input() -> Vec<String> {
 type Input = Vec<Vec<char>>;
 
 fn parse_input(input: Vec<String>) -> Input {
-    input.iter()
-        .map(|row| row.chars().collect())
-        .collect()
+    input.iter().map(|row| row.chars().collect()).collect()
 }
 
 pub fn run_day() {
@@ -42,7 +40,7 @@ fn move_rocks(map: &Input) -> Input {
                     after[row][column] = '.';
                     after[northest][column] = 'O';
                     northest += 1;
-                },
+                }
                 '#' => northest = row + 1,
                 _ => (),
             }
@@ -53,8 +51,13 @@ fn move_rocks(map: &Input) -> Input {
 
 fn compute_load(input: &Input) -> usize {
     let y_size = input.len();
-    input.iter().enumerate()
-        .flat_map(|(y, row)| row.iter().map(move |pos| if *pos == 'O' { y_size - y} else { 0 }))
+    input
+        .iter()
+        .enumerate()
+        .flat_map(|(y, row)| {
+            row.iter()
+                .map(move |pos| if *pos == 'O' { y_size - y } else { 0 })
+        })
         .sum()
 }
 
