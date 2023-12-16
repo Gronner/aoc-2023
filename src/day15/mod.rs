@@ -124,9 +124,10 @@ fn part2(input: &Input) -> u64 {
                 }
             }
             Operation::Sub => {
-                boxes
-                    .get_vec_mut(&hash(&lense.label))
-                    .map(|vec| { vec.retain(|val| val.0 != lense.label); Some(()) });
+                boxes.get_vec_mut(&hash(&lense.label)).map(|vec| {
+                    vec.retain(|val| val.0 != lense.label);
+                    Some(())
+                });
             }
         }
     }
