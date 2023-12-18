@@ -46,7 +46,14 @@ fn next_stop(
         .map(|new_pos| ((new_pos, direction, travled), input[new_pos]))
 }
 
-fn next_stops(input: &Input, pos: (usize, usize), direction: (isize, isize), travled: usize, max_len: usize, min_len: usize) -> Vec<Node> {
+fn next_stops(
+    input: &Input,
+    pos: (usize, usize),
+    direction: (isize, isize),
+    travled: usize,
+    max_len: usize,
+    min_len: usize,
+) -> Vec<Node> {
     let mut successor = Vec::new();
     if travled < max_len {
         successor.extend(next_stop(
@@ -57,12 +64,7 @@ fn next_stops(input: &Input, pos: (usize, usize), direction: (isize, isize), tra
         ));
     }
     if travled >= min_len {
-        successor.extend(next_stop(
-            input,
-            pos,
-            (-direction.1, -direction.0),
-            1,
-        ));
+        successor.extend(next_stop(input, pos, (-direction.1, -direction.0), 1));
         successor.extend(next_stop(input, pos, (direction.1, direction.0), 1));
     } else if travled == 0 {
         successor.extend(next_stop(input, pos, (1, 0), 1));

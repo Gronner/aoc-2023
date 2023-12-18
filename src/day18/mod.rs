@@ -22,9 +22,39 @@ struct Command {
     pub color: String,
 }
 
+impl Follow for Command {
+    fn get_direction(&self) -> Pos {
+        self.direction
+    }
+}
+
 #[derive(Debug)]
 struct Command2 {
     pub direction: Pos,
+}
+
+impl Follow for Command2 {
+    fn get_direction(&self) -> Pos {
+        self.direction
+    }
+}
+
+pub trait Follow {
+    fn get_direction(&self) -> Pos;
+
+    fn follow(&self, pos: &mut Pos, path: &mut Vec<Pos>) {
+        let new_pos = (
+            pos.0 + self.get_direction().0,
+            pos.1 + self.get_direction().1,
+        );
+        while *pos != new_pos {
+            *pos = (
+                pos.0 + self.get_direction().0.signum(),
+                pos.1 + self.get_direction().1.signum(),
+            );
+            path.push(*pos);
+        }
+    }
 }
 
 impl From<&Command> for Command2 {
@@ -64,10 +94,10 @@ impl FromStr for Command {
     }
 }
 
-
 fn parse_input(input: Vec<String>) -> Input {
-    input.iter()
-        .map(|line| Command::from_str(&line).unwrap())
+    input
+        .iter()
+        .map(|line| Command::from_str(line).unwrap())
         .collect()
 }
 
@@ -86,49 +116,36 @@ fn determinate(lhs: &Pos, rhs: &Pos) -> i128 {
     lhs.0 * rhs.1 - lhs.1 * rhs.0
 }
 
-fn part1(input: &Input) -> i128 {
-    let mut pos = (0, 0);
-    let mut boundary = vec![pos];
-    input.iter()
-        .for_each(|com| {
-            let new_pos = (pos.0 + com.direction.0, pos.1 + com.direction.1);
-            while pos != new_pos {
-                pos = (pos.0 + com.direction.0.signum(), pos.1 + com.direction.1.signum());
-                boundary.push(pos);
-            }
-            pos = new_pos;
-        });
-
+fn pikes_theorem(boundary: &Vec<Pos>) -> i128 {
     boundary
         .windows(2)
         .map(|win| determinate(&win[0], &win[1]))
         .sum::<i128>()
         .abs()
         / 2
-        + boundary.len() as i128 / 2 + 1
+        + boundary.len() as i128 / 2
+        + 1
+}
+
+fn part1(input: &Input) -> i128 {
+    let mut pos = (0, 0);
+    let mut boundary = vec![pos];
+    input
+        .iter()
+        .for_each(|com| com.follow(&mut pos, &mut boundary));
+
+    pikes_theorem(&boundary)
 }
 
 fn part2(input: &Input) -> i128 {
     let mut pos = (0, 0);
     let mut boundary = vec![pos];
-    input.iter()
-        .map(|com| Command2::from(com))
-        .for_each(|com| {
-            let new_pos = (pos.0 + com.direction.0, pos.1 + com.direction.1);
-            while pos != new_pos {
-                pos = (pos.0 + com.direction.0.signum(), pos.1 + com.direction.1.signum());
-                boundary.push(pos);
-            }
-            pos = new_pos;
-        });
+    input
+        .iter()
+        .map(Command2::from)
+        .for_each(|com| com.follow(&mut pos, &mut boundary));
 
-    boundary
-        .windows(2)
-        .map(|win| determinate(&win[0], &win[1]))
-        .sum::<i128>()
-        .abs()
-        / 2
-        + boundary.len() as i128 / 2 + 1
+    pikes_theorem(&boundary)
 }
 
 #[cfg(test)]
