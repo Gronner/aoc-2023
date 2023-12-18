@@ -43,17 +43,11 @@ pub trait Follow {
     fn get_direction(&self) -> Pos;
 
     fn follow(&self, pos: &mut Pos, path: &mut Vec<Pos>) {
-        let new_pos = (
+        *pos = (
             pos.0 + self.get_direction().0,
             pos.1 + self.get_direction().1,
         );
-        while *pos != new_pos {
-            *pos = (
-                pos.0 + self.get_direction().0.signum(),
-                pos.1 + self.get_direction().1.signum(),
-            );
-            path.push(*pos);
-        }
+        path.push(*pos);
     }
 }
 
@@ -117,13 +111,16 @@ fn determinate(lhs: &Pos, rhs: &Pos) -> i128 {
 }
 
 fn pikes_theorem(boundary: &Vec<Pos>) -> i128 {
+    let boundary_len = boundary.windows(2)
+        .map(|win| (win[0].0 - win[1].0).abs() + (win[0].1 - win[1].1).abs())
+        .sum::<i128>();
     boundary
         .windows(2)
         .map(|win| determinate(&win[0], &win[1]))
         .sum::<i128>()
         .abs()
         / 2
-        + boundary.len() as i128 / 2
+        + boundary_len / 2
         + 1
 }
 
