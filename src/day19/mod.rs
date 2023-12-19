@@ -150,7 +150,7 @@ fn parse_input(input: Vec<String>) -> Input {
     let mut workflows = input
         .iter()
         .take_while(|line| !line.is_empty())
-        .map(|line| parse_workflow(&line))
+        .map(|line| parse_workflow(line))
         .collect::<HashMap<_, _>>();
     workflows.insert("A".to_string(), vec![Check::Accepted]);
     workflows.insert("R".to_string(), vec![Check::Rejected]);
@@ -180,7 +180,7 @@ fn part1(input: &Input) -> usize {
     let (workflows, parts) = input;
     parts
         .iter()
-        .map(|part| part.apply_workflow(&workflows))
+        .map(|part| part.apply_workflow(workflows))
         .sum()
 }
 
@@ -188,8 +188,7 @@ fn part2(input: &Input) -> usize {
     let (workflows, _) = input;
     let mut stack = vec![("in", 0, (1, 4000), (1, 4000), (1, 4000), (1, 4000))];
     let mut combinations = 0;
-    while !stack.is_empty() {
-        let (workflow, stage, x, m, a, s) = stack.pop().unwrap();
+    while let Some((workflow, stage, x, m, a, s)) = stack.pop() {
         if workflow == "R" {
             continue;
         }
@@ -204,7 +203,8 @@ fn part2(input: &Input) -> usize {
         let check = &workflows.get(workflow).unwrap()[stage];
         match check {
             Check::Accepted => {
-                combinations += (x.1 - x.0 + 1) * (m.1 - m.0 + 1) * (a.1 - a.0 + 1) * (s.1 - s.0 + 1);
+                combinations +=
+                    (x.1 - x.0 + 1) * (m.1 - m.0 + 1) * (a.1 - a.0 + 1) * (s.1 - s.0 + 1);
                 continue;
             }
             Check::Rejected => {
@@ -213,48 +213,44 @@ fn part2(input: &Input) -> usize {
             Check::Next(new_wf) => {
                 stack.push((&new_wf, 0, x, m, a, s));
             }
-            Check::GT(variable, number, next) => {
-                match variable.as_ref() {
-                    "x" => {
-                        stack.push((&next, 0, (number + 1, x.1), m, a, s));
-                        stack.push((workflow, stage + 1, (x.0, *number), m, a, s));
-                    },
-                    "m" => {
-                        stack.push((&next, 0, x, (number + 1, m.1), a, s));
-                        stack.push((workflow, stage + 1, x, (m.0, *number), a, s));
-                    },
-                    "a" => {
-                        stack.push((&next, 0, x, m, (number + 1, a.1), s));
-                        stack.push((workflow, stage + 1, x, m, (a.0, *number), s));
-                    },
-                    "s" => {
-                        stack.push((&next, 0, x, m, a, (number + 1, s.1)));
-                        stack.push((workflow, stage + 1, x, m, a, (s.0, *number)));
-                    },
-                    e => panic!("Unexpected variable: {e}"),
+            Check::GT(variable, number, next) => match variable.as_ref() {
+                "x" => {
+                    stack.push((&next, 0, (number + 1, x.1), m, a, s));
+                    stack.push((workflow, stage + 1, (x.0, *number), m, a, s));
                 }
-            }
-            Check::LT(variable, number, next) => {
-                match variable.as_ref() {
-                    "x" => {
-                        stack.push((&next, 0, (x.0, number - 1), m, a, s));
-                        stack.push((workflow, stage + 1, (*number, x.1), m, a, s));
-                    },
-                    "m" => {
-                        stack.push((&next, 0, x, (m.0, number - 1), a, s));
-                        stack.push((workflow, stage + 1, x, (*number, m.1), a, s));
-                    },
-                    "a" => {
-                        stack.push((&next, 0, x, m, (a.0, number - 1), s));
-                        stack.push((workflow, stage + 1, x, m, (*number, a.1), s));
-                    },
-                    "s" => {
-                        stack.push((&next, 0, x, m, a, (s.0, number - 1)));
-                        stack.push((workflow, stage + 1, x, m, a, (*number, s.1)));
-                    },
-                    e => panic!("Unexpected variable: {e}"),
+                "m" => {
+                    stack.push((&next, 0, x, (number + 1, m.1), a, s));
+                    stack.push((workflow, stage + 1, x, (m.0, *number), a, s));
                 }
-            }
+                "a" => {
+                    stack.push((&next, 0, x, m, (number + 1, a.1), s));
+                    stack.push((workflow, stage + 1, x, m, (a.0, *number), s));
+                }
+                "s" => {
+                    stack.push((&next, 0, x, m, a, (number + 1, s.1)));
+                    stack.push((workflow, stage + 1, x, m, a, (s.0, *number)));
+                }
+                e => panic!("Unexpected variable: {e}"),
+            },
+            Check::LT(variable, number, next) => match variable.as_ref() {
+                "x" => {
+                    stack.push((&next, 0, (x.0, number - 1), m, a, s));
+                    stack.push((workflow, stage + 1, (*number, x.1), m, a, s));
+                }
+                "m" => {
+                    stack.push((&next, 0, x, (m.0, number - 1), a, s));
+                    stack.push((workflow, stage + 1, x, (*number, m.1), a, s));
+                }
+                "a" => {
+                    stack.push((&next, 0, x, m, (a.0, number - 1), s));
+                    stack.push((workflow, stage + 1, x, m, (*number, a.1), s));
+                }
+                "s" => {
+                    stack.push((&next, 0, x, m, a, (s.0, number - 1)));
+                    stack.push((workflow, stage + 1, x, m, a, (*number, s.1)));
+                }
+                e => panic!("Unexpected variable: {e}"),
+            },
         }
     }
     combinations

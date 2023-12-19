@@ -110,8 +110,9 @@ fn determinate(lhs: &Pos, rhs: &Pos) -> i128 {
     lhs.0 * rhs.1 - lhs.1 * rhs.0
 }
 
-fn pikes_theorem(boundary: &Vec<Pos>) -> i128 {
-    let boundary_len = boundary.windows(2)
+fn pikes_theorem(boundary: &[Pos]) -> i128 {
+    let boundary_len = boundary
+        .windows(2)
         .map(|win| (win[0].0 - win[1].0).abs() + (win[0].1 - win[1].1).abs())
         .sum::<i128>();
     boundary
