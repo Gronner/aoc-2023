@@ -1,0 +1,119 @@
+digraph sample {
+    cd [shape=box]
+    bk [shape=box]
+    px [shape=box]
+    tv [shape=box]
+    xc [style=filled, fillcolor=green, shape=circle]
+    bd [shape=box]
+    bh [style=filled, fillcolor=red, shape=circle]
+    dx [shape=box]
+    vv [shape=box]
+    broadcaster
+    rb [shape=box]
+    jf [style=filled, fillcolor=red,shape=circle]
+    jd [shape=box]
+    cx [shape=box]
+    zs [shape=box]
+    hn [shape=box]
+    xr [shape=box]
+    mf [shape=circle]
+    zq [shape=box]
+    cn [style=filled, fillcolor=green, shape=circle]
+    cs [shape=box]
+    fb [shape=box]
+    mm [shape=box]
+    sq [shape=box]
+    sz [shape=box]
+    xl [shape=box]
+    vm [shape=box]
+    jp [shape=box]
+    qr [shape=box]
+    bq [shape=box]
+    sh [style=filled, fillcolor=red, shape=circle]
+    gz [shape=box]
+    qc [shape=box]
+    hg [shape=box]
+    dt [shape=box]
+    xj [shape=box]
+    qs [shape=box]
+    fz [shape=box]
+    qg [shape=box]
+    pp [shape=box]
+    zv [shape=box]
+    rh [shape=box]
+    gh [style=filled, fillcolor=green, shape=circle]
+    th [shape=box]
+    mz [style=filled, fillcolor=red, shape=circle]
+    bm [shape=box]
+    lk [shape=box]
+    jx [shape=box]
+    hz [style=filled, fillcolor=green, shape=circle]
+    tc [shape=box]
+    mr [shape=box]
+    xd [shape=box]
+    pg [shape=box]
+    kg [shape=box]
+    gs [shape=box]
+    vx [shape=box]
+    cz [shape=box]
+    jk [shape=box]
+
+    cd -> {jx gh}
+    bk -> {jp cn}
+    px -> {xc hg}
+    tv -> {gh xl}
+    xc -> {bm zq jf hg bd hn}
+    bd -> {px}
+    bh -> {mf}
+    dx -> {cn rb}
+    vv -> {pp gh}
+    broadcaster -> {cx zq tv rh}
+    rb -> {cn qr}
+    jf -> {mf}
+    jd -> {mm}
+    cx -> {xd cn}
+    zs -> {cz}
+    hn -> {bm}
+    xr -> {bd xc}
+    mf -> {rx}
+    zq -> {kg xc}
+    cn -> {sh jd cx tc xd}
+    cs -> {xj}
+    fb -> {tc cn}
+    mm -> {cn bk}
+    sq -> {th hz}
+    sz -> {vx}
+    xl -> {gh sz}
+    vm -> {gh vv}
+    jp -> {cn}
+    qr -> {cn jd}
+    bq -> {xc zv}
+    sh -> {mf}
+    gz -> {gs hz}
+    qc -> {qg xc}
+    hg -> {bq}
+    dt -> {sq hz}
+    xj -> {fz}
+    qs -> {gh}
+    fz -> {hz zs}
+    qg -> {xc}
+    pp -> {qs gh}
+    zv -> {xc qc}
+    rh -> {hz mr}
+    gh -> {tv lk sz bh vx}
+    th -> {hz}
+    mz -> {mf}
+    bm -> {xr}
+    lk -> {pg}
+    jx -> {lk gh}
+    hz -> {xj cs zs rh mz}
+    tc -> {dx}
+    mr -> {hz gz}
+    xd -> {jk}
+    pg -> {vm gh}
+    kg -> {hn xc}
+    gs -> {cs hz}
+    vx -> {cd}
+    cz -> {hz dt}
+    jk -> {cn fb}
+}
