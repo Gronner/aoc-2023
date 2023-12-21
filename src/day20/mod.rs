@@ -361,7 +361,7 @@ fn part2(input: &mut Input) -> u128 {
                 &path
                     .iter()
                     .skip(1) // Don't care about broadcaster
-                     // Compute Mod Counter Value
+                    // Compute Mod Counter Value
                     .filter(|node| {
                         modules.get::<String>(node).unwrap().mod_type() != Type::Conjunction
                     })
