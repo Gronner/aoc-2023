@@ -9,6 +9,7 @@ edition = "2021"
 aoc-downloader = { git = "https://github.com/Gronner/aoc-downloader" }
 cache-macro = "0.4.1"
 cached = "0.46.1"
+graphrs = "0.7.0"
 itertools = "0.12.0"
 multimap = "0.9.1"
 num = "0.4.1"
